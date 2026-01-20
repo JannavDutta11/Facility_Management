@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-
 namespace Facility_Management.Models
 {
     public class AppDbContext : DbContext
@@ -12,8 +11,10 @@ namespace Facility_Management.Models
 
         }
 
-
+        public DbSet<Resource> ResourcesSet { get; set; }
         public DbSet<Booking> Bookings { get; set; }
+
+        public DbSet<Maintenance> Maintenances { get; set; }
         public IEnumerable<object> Resources { get; internal set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
