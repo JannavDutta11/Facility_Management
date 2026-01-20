@@ -19,7 +19,6 @@ namespace Facility_Management.Controllers
                 _context = context;
             }
 
-            // =========================
             // CREATE BOOKING
          
             [HttpPost("create")]
