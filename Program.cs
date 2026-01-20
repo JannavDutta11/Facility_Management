@@ -12,6 +12,8 @@ builder.Services.AddSwaggerGen();
 string cn = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(cn));
 
+builder.Services.AddScoped<Facility_Management.Repository.IResourceRepository, Facility_Management.Repository.ResourceRepository>();
+
 
 var app = builder.Build();
 
