@@ -14,7 +14,7 @@ namespace Facility_Management.Models
 
 
         public DbSet<Booking> Bookings { get; set; }
-
+        public IEnumerable<object> Resources { get; internal set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
