@@ -49,24 +49,24 @@ namespace Facility_Management.Controllers
                 if (conflict)
                     return BadRequest("Booking conflict detected.");
 
-        
 
 
-            //Booking booking = new Booking
-            //{
-            //    ResourceId = dto.ResourceId,
-            //    StartTime = dto.StartTime,
-            //    EndTime = dto.EndTime,
-            //    Purpose = dto.Purpose,
-            //    NumberOfUsers = dto.NumberOfUsers,
-            //    Status = "Pending",
-            //    CreatedAt = DateTime.Now
-            //};
 
-            //await _context.Bookings.AddAsync(booking);
-            //await _context.SaveChangesAsync();
+            Booking booking = new Booking
+            {
+                ResourceId = dto.ResourceId,
+                StartTime = dto.StartTime,
+                EndTime = dto.EndTime,
+                Purpose = dto.Purpose,
+                NumberOfUsers = dto.NumberOfUsers,
+                Status = "Pending",
+                CreatedAt = DateTime.Now
+            };
 
-            //return Ok(booking);
+            await _context.Bookings.AddAsync(booking);
+            await _context.SaveChangesAsync();
+
+            return Ok(booking);
         }
 
         // APPROVE BOOKING
