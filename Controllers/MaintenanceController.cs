@@ -1,4 +1,5 @@
 ﻿using Facility_Management.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 namespace Facility_Management.Controllers
@@ -15,7 +16,9 @@ namespace Facility_Management.Controllers
         // ===============================
         // 1. CREATE MAINTENANCE
         // ===============================
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpPost]
+        
         public async Task<IActionResult> CreateMaintenance(Maintenance maintenance)
         {
             if (!ModelState.IsValid)
@@ -28,7 +31,10 @@ namespace Facility_Management.Controllers
         // ===============================
         // 2. GET ALL MAINTENANCE
         // ===============================
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpGet]
+        
+
         public async Task<IActionResult> GetAllMaintenance()
         {
             var data = await _context.Maintenances.ToListAsync();
@@ -37,7 +43,9 @@ namespace Facility_Management.Controllers
         // ===============================
         // 3. GET MAINTENANCE BY ID
         // ===============================
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpGet("{id}")]
+        
         public async Task<IActionResult> GetMaintenanceById(int id)
         {
             var maintenance = await _context.Maintenances.FindAsync(id);
@@ -48,7 +56,9 @@ namespace Facility_Management.Controllers
         // ===============================
         // 4. GET MAINTENANCE BY RESOURCE
         // ===============================
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpGet("resource/{resourceId}")]
+        
         public async Task<IActionResult> GetByResourceId(int resourceId)
         {
             var data = await _context.Maintenances
@@ -59,7 +69,9 @@ namespace Facility_Management.Controllers
         // ===============================
         // 5. UPDATE MAINTENANCE
         // ===============================
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpPut("{id}")]
+        
         public async Task<IActionResult> UpdateMaintenance(int id, Maintenance maintenance)
         {
             if (id != maintenance.MaintenanceId)
@@ -71,7 +83,9 @@ namespace Facility_Management.Controllers
         // ===============================
         // 6. DELETE / CLOSE MAINTENANCE
         // ===============================
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpDelete("{id}")]
+        
         public async Task<IActionResult> DeleteMaintenance(int id)
         {
             var maintenance = await _context.Maintenances.FindAsync(id);

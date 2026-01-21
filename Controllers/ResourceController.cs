@@ -1,5 +1,6 @@
 ﻿using Facility_Management.Models;
 using Facility_Management.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,13 +17,17 @@ namespace Facility_Management.Controllers
             _repo = repo;
         }
 
+        [AllowAnonymous]
         [HttpGet]
+       
         public async Task<IActionResult> GetAll()
         {
             return Ok(await _repo.GetAllAsync());
         }
 
+        [AllowAnonymous]
         [HttpGet("{id}")]
+        
         public async Task<IActionResult> Get(int id)
         {
             var resource = await _repo.GetByIdAsync(id);
@@ -30,7 +35,9 @@ namespace Facility_Management.Controllers
             return Ok(resource);
         }
 
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpPost]
+       
         public async Task<IActionResult> Create(CreateResourceDto dto)
         {
             if (dto.Capacity <= 0)
@@ -49,7 +56,9 @@ namespace Facility_Management.Controllers
             return Ok(resource);
         }
 
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpPut("{id}")]
+        
         public async Task<IActionResult> Update(int id, Resource resource)
         {
             if (id != resource.ResourceId)
@@ -59,7 +68,9 @@ namespace Facility_Management.Controllers
             return Ok();
         }
 
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpDelete("{id}")]
+        
         public async Task<IActionResult> Archive(int id)
         {
             await _repo.ArchiveAsync(id);

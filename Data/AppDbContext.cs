@@ -1,7 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
 namespace Facility_Management.Models
 {
-    public class AppDbContext : DbContext
+
+    // Use IdentityDbContext so AuthController/UserManager/RoleManager work
+    public class AppDbContext : IdentityDbContext<ApplicationUser>
+
 
     {
 
@@ -15,12 +20,17 @@ namespace Facility_Management.Models
         public DbSet<Booking> Bookings { get; set; }
 
         public DbSet<Maintenance> Maintenances { get; set; }
-        public IEnumerable<object> Resources { get; internal set; }
+       // public IEnumerable<object> Resources { get; internal set; }
 
         public DbSet<Resource> Resource { get; set; }
         public DbSet<ResourceType> ResourceTypes { get; set; }
         public DbSet<ResourceCategory> ResourceCategories { get; set; }
         public DbSet<ResourceRule> ResourceRules { get; set; }
+
+        // --- Dev 3 (Utilization Tracking) ---
+        public DbSet<UsageLog> UsageLogs { get; set; }
+        public DbSet<UsageAudit> UsageAudits { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -105,7 +115,28 @@ namespace Facility_Management.Models
                 .WithMany()
                 .HasForeignKey(rr => rr.ResourceId);
 
-            base.OnModelCreating(modelBuilder);
+            // ---------------- UsageLog ----------------
+            modelBuilder.Entity<UsageLog>()
+                .HasKey(u => u.UsageLogId);
+
+            modelBuilder.Entity<UsageLog>()
+                .HasOne(u => u.Booking)
+                .WithMany().HasForeignKey(u => u.BookingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UsageLog>()
+                            .HasIndex(u => new { u.BookingId, u.ActualStartTime, u.ActualEndTime });
+
+            // ---------------- UsageAudit ----------------
+            modelBuilder.Entity<UsageAudit>()
+                .HasKey(a => a.UsageAuditId);
+
+            modelBuilder.Entity<UsageAudit>()
+                           .HasIndex(a => new
+                           {
+                               a.BookingId,
+                               a.ChangedAt
+                           });
         }
 
     }
