@@ -1,4 +1,5 @@
-﻿using Facility_Management.Models;
+﻿using Facility_Management.DTOs;
+using Facility_Management.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,20 +25,43 @@ namespace Facility_Management.Controllers
             [HttpPost("create")]
             public async Task<IActionResult> CreateBooking(BookingDto dto)
             {
-                if (dto.StartTime >= dto.EndTime)
-                    return BadRequest("StartTime must be before EndTime.");
+            // 1️⃣ Time validation
+            if (dto.StartTime >= dto.EndTime)
+                return BadRequest("StartTime must be before EndTime.");
 
-                bool conflict = await _context.Bookings.AnyAsync(b =>
-                    b.ResourceId == dto.ResourceId &&
-                    b.Status == "Approved" &&
-                    dto.StartTime < b.EndTime &&
-                    dto.EndTime > b.StartTime
-                );
+            // 2️⃣ Resource existence validation (Dev-1 integration)
+            bool resourceExists = await _context.Resource
+                .AnyAsync(r => r.ResourceId == dto.ResourceId);
 
-                if (conflict)
-                    return BadRequest("Booking conflict detected.");
+            if (!resourceExists)
+                return BadRequest("Invalid ResourceId. Resource does not exist.");
 
-                Booking booking = new Booking
+           
+
+            bool systemAllowed = await _context.ResourceRule.AnyAsync(a =>
+                a.ResourceId == dto.ResourceId &&
+                dto.StartTime >= a.StartTime &&
+                dto.EndTime <= a.EndTime
+            );
+
+            if (!systemAllowed)
+                return BadRequest("Resource is not available as per system rules.");
+
+           
+            TimeSpan buffer = TimeSpan.FromMinutes(15);
+
+            bool conflict = await _context.Bookings.AnyAsync(b =>
+                b.ResourceId == dto.ResourceId &&
+                b.Status == "Approved" &&
+                dto.StartTime < b.EndTime.Add(buffer) &&
+                dto.EndTime > b.StartTime.Subtract(buffer)
+            );
+
+            if (conflict)
+                return BadRequest("Booking conflict detected (buffer time violation).");
+
+
+            Booking booking = new Booking
                 {
                     ResourceId = dto.ResourceId,
                     StartTime = dto.StartTime,
