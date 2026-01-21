@@ -1,20 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-namespace Facility_Management.Models
+﻿using Facility_Management.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+namespace Facility_Management.Data
 {
     public class AppDbContext : DbContext
-
     {
-
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-
-        {
-
-        }
-
-        
-        public DbSet<Booking> Bookings { get; set; }
-
+        public AppDbContext(DbContextOptions<AppDbContext> options)
+            : base(options) { }
+        public DbSet<Resource> Resources { get; set; }
         public DbSet<Maintenance> Maintenances { get; set; }
+<<<<<<< Updated upstream
         public IEnumerable<object> Resources { get; internal set; }
 
         public DbSet<Resource> Resource { get; set; }
@@ -108,7 +103,8 @@ namespace Facility_Management.Models
             base.OnModelCreating(modelBuilder);
         }
 
+=======
+        public DbSet<MaintenanceHistory> MaintenanceHistories { get; set; }
+>>>>>>> Stashed changes
     }
 }
-
-
