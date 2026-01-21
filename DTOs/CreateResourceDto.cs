@@ -1,4 +1,4 @@
-﻿namespace Facility_Management.Models
+﻿namespace Facility_Management.DTOs
 {
     public class CreateResourceDto
     {
