@@ -6,7 +6,7 @@
 
         public int ResourceId { get; set; }
 
-        public string ResourceName { get; set; }
+        //public string ResourceName { get; set; }
         public int UserId { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }

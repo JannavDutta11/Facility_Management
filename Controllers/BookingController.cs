@@ -23,7 +23,7 @@ namespace Facility_Management.Controllers
             // CREATE BOOKING
          
             [HttpPost("create")]
-            public async Task<IActionResult> CreateBooking(BookingDto dto)
+            public async Task<IActionResult> CreateBooking([FromBody]BookingDto dto)
             {
             // 1️⃣ Time validation
             if (dto.StartTime >= dto.EndTime)
@@ -36,47 +36,103 @@ namespace Facility_Management.Controllers
             if (!resourceExists)
                 return BadRequest("Invalid ResourceId. Resource does not exist.");
 
-           
 
-            bool systemAllowed = await _context.ResourceRule.AnyAsync(a =>
-                a.ResourceId == dto.ResourceId &&
-                dto.StartTime >= a.StartTime &&
-                dto.EndTime <= a.EndTime
-            );
 
-            if (!systemAllowed)
-                return BadRequest("Resource is not available as per system rules.");
+            //bool systemAllowed = await _context.ResourceRule.AnyAsync(a =>
+            //    a.ResourceId == dto.ResourceId &&
+            //    dto.StartTime >= a.StartTime &&
+            //    dto.EndTime <= a.EndTime
+            //);
 
-           
-            TimeSpan buffer = TimeSpan.FromMinutes(15);
+            //if (!systemAllowed)
+            //    return BadRequest("Resource is not available as per system rules.");
 
-            bool conflict = await _context.Bookings.AnyAsync(b =>
-                b.ResourceId == dto.ResourceId &&
-                b.Status == "Approved" &&
-                dto.StartTime < b.EndTime.Add(buffer) &&
-                dto.EndTime > b.StartTime.Subtract(buffer)
-            );
+
+            //TimeSpan buffer = TimeSpan.FromMinutes(15);
+
+            //bool conflict = await _context.Bookings.AnyAsync(b =>
+            //    b.ResourceId == dto.ResourceId &&
+            //    b.Status == "Approved" &&
+            //    dto.StartTime < b.EndTime.Add(buffer) &&
+            //    dto.EndTime > b.StartTime.Subtract(buffer)
+            //);
+
+            //if (conflict)
+            //    return BadRequest("Booking conflict detected (buffer time violation).");
+
+            var rule = await _context.ResourceRule
+    .FirstOrDefaultAsync(r => r.ResourceId == dto.ResourceId);
+
+            if (rule == null)
+                return BadRequest("No rules configured for this resource.");
+
+            if (dto.StartTime.TimeOfDay < rule.StartTime.TimeOfDay || dto.EndTime.TimeOfDay > rule.EndTime.TimeOfDay)
+                return BadRequest("Booking outside allowed hours.");
+
+            var durationHours = (dto.EndTime - dto.StartTime).TotalHours;
+            if (durationHours > rule.MaxBookingHours)
+                return BadRequest("Booking exceeds maximum allowed duration.");
+
+
+            var existingBookings = await _context.Bookings
+    .Where(b =>
+        b.ResourceId == dto.ResourceId &&
+        b.Status == "Approved"
+    )
+    .ToListAsync(); // 👈 DB ends here
+
+            var bufferMinutes = rule.BufferMinutes;
+
+            bool conflict = existingBookings.Any(b =>
+            {
+                var bufferedStart = b.StartTime.AddMinutes(-bufferMinutes);
+                var bufferedEnd = b.EndTime.AddMinutes(bufferMinutes);
+
+                return dto.StartTime < bufferedEnd &&
+                       dto.EndTime > bufferedStart;
+            });
 
             if (conflict)
                 return BadRequest("Booking conflict detected (buffer time violation).");
 
 
-            Booking booking = new Booking
-                {
-                    ResourceId = dto.ResourceId,
-                    StartTime = dto.StartTime,
-                    EndTime = dto.EndTime,
-                    Purpose = dto.Purpose,
-                    NumberOfUsers = dto.NumberOfUsers,
-                    Status = "Pending",
-                    CreatedAt = DateTime.Now
-                };
+            var booking = new Booking
+            {
+                ResourceId = dto.ResourceId,
+                StartTime = dto.StartTime,
+                EndTime = dto.EndTime,
+                Purpose = dto.Purpose,
+                NumberOfUsers = dto.NumberOfUsers,
 
-                await _context.Bookings.AddAsync(booking);
-                await _context.SaveChangesAsync();
+                // 🔑 approval logic (correct place)
+                Status = rule.AutoApproveBooking ? "Approved" : "Pending",
 
-                return Ok(booking);
-            }
+                CreatedAt = DateTime.Now
+            };
+
+            await _context.Bookings.AddAsync(booking);
+            await _context.SaveChangesAsync();
+
+            return Ok(booking);
+
+
+
+            //Booking booking = new Booking
+            //    {
+            //        ResourceId = dto.ResourceId,
+            //        StartTime = dto.StartTime,
+            //        EndTime = dto.EndTime,
+            //        Purpose = dto.Purpose,
+            //        NumberOfUsers = dto.NumberOfUsers,
+            //        Status = "Pending",
+            //        CreatedAt = DateTime.Now
+            //    };
+
+            //    await _context.Bookings.AddAsync(booking);
+            //    await _context.SaveChangesAsync();
+
+            //    return Ok(booking);
+        }
 
             // APPROVE BOOKING
            

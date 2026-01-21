@@ -17,12 +17,11 @@ namespace Facility_Management.Controllers
             {
                 _context = context;
             }
-
             [HttpPost]
             public async Task<IActionResult> Create(CreateResourceRuleDto dto)
             {
                 if (dto.StartTime >= dto.EndTime)
-                    return BadRequest("StartHour must be less than EndHour");
+                    return BadRequest("Invalid working hours");
 
                 var rule = new ResourceRule
                 {
@@ -30,16 +29,18 @@ namespace Facility_Management.Controllers
                     StartTime = dto.StartTime,
                     EndTime = dto.EndTime,
                     MaxBookingHours = dto.MaxBookingHours,
-                    BufferMinutes = dto.BufferMinutes
+                    BufferMinutes = dto.BufferMinutes,
+                    AutoApproveBooking = dto.AutoApproveBooking,
+                    AdminApprovalRequired = dto.AdminApprovalRequired
                 };
 
                 _context.ResourceRule.Add(rule);
                 await _context.SaveChangesAsync();
 
-                return Ok(rule);
-            }
+            return Ok(rule);
+        }
 
-            [HttpGet("{resourceId}")]
+        [HttpGet("{resourceId}")]
             public async Task<IActionResult> GetByResource(int resourceId)
             {
                 var rule = await _context.ResourceRule.FirstOrDefaultAsync(r => r.ResourceId == resourceId);

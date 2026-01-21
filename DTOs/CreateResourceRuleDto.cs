@@ -8,6 +8,10 @@
             public DateTime EndTime { get; set; }
             public int MaxBookingHours { get; set; }
             public int BufferMinutes { get; set; }
-        }
+
+        public bool AutoApproveBooking { get; set; }
+
+        public bool AdminApprovalRequired { get; set; }
+    }
     }
 
