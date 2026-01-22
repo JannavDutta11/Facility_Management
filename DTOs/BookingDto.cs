@@ -1,8 +1,11 @@
 ﻿namespace Facility_Management.Models
+﻿namespace Facility_Management.DTOs
 {
     public class BookingDto
     {
         public int ResourceId { get; set; }
+
+        //public string ResourceName { get; set; }
 
         public DateTime StartTime { get; set; }
 
