@@ -7,25 +7,25 @@ using System.Data;
 
 
 
- 
+
 namespace Facility_Management.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class BookingController : ControllerBase
     {
-        [ApiController]
-        [Route("api/[controller]")]
-        public class BookingController : ControllerBase
+        private readonly AppDbContext _context;
+
+        public BookingController(AppDbContext context)
         {
-            private readonly AppDbContext _context;
+            _context = context;
+        }
 
-            public BookingController(AppDbContext context)
-            {
-                _context = context;
-            }
+        // CREATE BOOKING
 
-            // CREATE BOOKING
-         
-            [HttpPost("create")]
-            public async Task<IActionResult> CreateBooking([FromBody]BookingDto dto)
-            {
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateBooking([FromBody] BookingDto dto)
+        {
             // 1️⃣ Time validation
             if (dto.StartTime >= dto.EndTime)
                 return BadRequest("StartTime must be before EndTime.");
@@ -134,107 +134,62 @@ namespace Facility_Management.Controllers
 
             //    return Ok(booking);
         }
-                if (dto.StartTime >= dto.EndTime)
-                    return BadRequest("StartTime must be before EndTime.");
-
-                if(dto.NumberOfUsers <=0)
-                return BadRequest("Number of users must be greater than zero");
-
-            bool resourceExists = await _context.Resource.AnyAsync(r => r.ResourceId == dto.ResourceId);
-
-            if (!resourceExists)
-                return BadRequest("Invalid ResourceId. Resource does not exist.");
-
-
-
-            bool conflict = await _context.Bookings.AnyAsync(b =>
-                    b.ResourceId == dto.ResourceId &&
-                    b.Status == "Approved" &&
-                    dto.StartTime < b.EndTime &&
-                    dto.EndTime > b.StartTime
-                );
-
-                if (conflict)
-                    return BadRequest("Booking conflict detected.");
-
-
-
-
-            Booking booking = new Booking
-            {
-                ResourceId = dto.ResourceId,
-                StartTime = dto.StartTime,
-                EndTime = dto.EndTime,
-                Purpose = dto.Purpose,
-                NumberOfUsers = dto.NumberOfUsers,
-                Status = "Pending",
-                CreatedAt = DateTime.Now
-            };
-
-            await _context.Bookings.AddAsync(booking);
-            await _context.SaveChangesAsync();
-
-            return Ok(booking);
-        }
 
         // APPROVE BOOKING
 
         [HttpPut("approve/{id}")]
-            public async Task<IActionResult> ApproveBooking(int id)
-            {
-                var booking = await _context.Bookings.FindAsync(id);
-                if (booking == null)
-                    return NotFound();
+        public async Task<IActionResult> ApproveBooking(int id)
+        {
+            var booking = await _context.Bookings.FindAsync(id);
+            if (booking == null)
+                return NotFound();
 
-                booking.Status = "Approved";
-                await _context.SaveChangesAsync();
+            booking.Status = "Approved";
+            await _context.SaveChangesAsync();
 
-                return Ok("Booking Approved");
-            }
+            return Ok("Booking Approved");
+        }
 
-         
-            // REJECT BOOKING
-         
-            [HttpPut("reject/{id}")]
-            public async Task<IActionResult> RejectBooking(int id, string reason)
-            {
-                var booking = await _context.Bookings.FindAsync(id);
-                if (booking == null)
-                    return NotFound();
 
-                booking.Status = "Rejected";
-                booking.RejectionReason = reason;
+        // REJECT BOOKING
 
-                await _context.SaveChangesAsync();
-                return Ok("Booking Rejected");
-            }
+        [HttpPut("reject/{id}")]
+        public async Task<IActionResult> RejectBooking(int id, string reason)
+        {
+            var booking = await _context.Bookings.FindAsync(id);
+            if (booking == null)
+                return NotFound();
 
-            // CANCEL BOOKING
-        
-            [HttpPut("cancel/{id}")]
-            public async Task<IActionResult> CancelBooking(int id)
-            {
-                var booking = await _context.Bookings.FindAsync(id);
-                if (booking == null)
-                    return NotFound();
+            booking.Status = "Rejected";
+            booking.RejectionReason = reason;
 
-                booking.Status = "Cancelled";
-                await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
+            return Ok("Booking Rejected");
+        }
 
-                return Ok("Booking Cancelled");
-            }
+        // CANCEL BOOKING
 
-          
-            // GET ALL BOOKINGS
-           
-            [HttpGet("all")]
-            public async Task<IActionResult> GetAllBookings()
-            {
-                var bookings = await _context.Bookings.ToListAsync();
-                return Ok(bookings);
-            }
+        [HttpPut("cancel/{id}")]
+        public async Task<IActionResult> CancelBooking(int id)
+        {
+            var booking = await _context.Bookings.FindAsync(id);
+            if (booking == null)
+                return NotFound();
+
+            booking.Status = "Cancelled";
+            await _context.SaveChangesAsync();
+
+            return Ok("Booking Cancelled");
+        }
+
+
+        // GET ALL BOOKINGS
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllBookings()
+        {
+            var bookings = await _context.Bookings.ToListAsync();
+            return Ok(bookings);
         }
     }
-
-
-
+}

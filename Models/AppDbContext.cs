@@ -1,21 +1,26 @@
-﻿using Facility_Management.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-namespace Facility_Management.Data
+﻿using Microsoft.EntityFrameworkCore;
+namespace Facility_Management.Models
 {
     public class AppDbContext : DbContext
+
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options)
-            : base(options) { }
-        public DbSet<Resource> Resources { get; set; }
+
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+
+        {
+
+        }
+
+
+        public DbSet<Booking> Bookings { get; set; }
+
         public DbSet<Maintenance> Maintenances { get; set; }
-<<<<<<< Updated upstream
         public IEnumerable<object> Resources { get; internal set; }
 
         public DbSet<Resource> Resource { get; set; }
         public DbSet<ResourceType> ResourceTypes { get; set; }
         public DbSet<ResourceCategory> ResourceCategories { get; set; }
-        
+
         public DbSet<ResourceRule> ResourceRule { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -55,10 +60,10 @@ namespace Facility_Management.Data
                 .HasForeignKey(rr => rr.ResourceId);
 
             base.OnModelCreating(modelBuilder);
-        
 
-        modelBuilder.Entity<Booking>()
-                .HasKey(b => b.BookingId);
+
+            modelBuilder.Entity<Booking>()
+                    .HasKey(b => b.BookingId);
 
             modelBuilder.Entity<Booking>()
                 .Property(b => b.ResourceId)
@@ -78,7 +83,7 @@ namespace Facility_Management.Data
 
             modelBuilder.Entity<Booking>()
                 .Property(b => b.Status)
-               // .HasConversion<int>()
+                // .HasConversion<int>()
                 .IsRequired();
 
             modelBuilder.Entity<Booking>()
@@ -89,7 +94,7 @@ namespace Facility_Management.Data
                 .Property(b => b.NumberOfUsers)
                 .HasDefaultValue(1);
 
-            
+
             modelBuilder.Entity<Booking>()
                 .ToTable(tb =>
                 {
@@ -106,8 +111,5 @@ namespace Facility_Management.Data
 
         }
 
-=======
-        public DbSet<MaintenanceHistory> MaintenanceHistories { get; set; }
->>>>>>> Stashed changes
     }
 }
