@@ -15,13 +15,49 @@ namespace Facility_Management.Data
         public DbSet<Resource> Resource { get; set; }
         public DbSet<ResourceType> ResourceTypes { get; set; }
         public DbSet<ResourceCategory> ResourceCategories { get; set; }
-        public DbSet<ResourceRule> ResourceRules { get; set; }
-
+        
+        public DbSet<ResourceRule> ResourceRule { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Booking>()
+
+            // Resource
+            modelBuilder.Entity<Resource>()
+                .HasKey(r => r.ResourceId);
+
+            // ResourceType
+            modelBuilder.Entity<ResourceType>()
+                .HasKey(rt => rt.ResourceTypeId);
+
+            // ResourceCategory
+            modelBuilder.Entity<ResourceCategory>()
+                .HasKey(rc => rc.CategoryId);
+
+            // ResourceRule
+            modelBuilder.Entity<ResourceRule>()
+                .HasKey(rr => rr.RuleId);
+
+            // Relationships (explicit & safe)
+            modelBuilder.Entity<Resource>()
+                .HasOne(r => r.ResourceType)
+                .WithMany()
+                .HasForeignKey(r => r.ResourceTypeId);
+
+            modelBuilder.Entity<Resource>()
+                .HasOne(r => r.Category)
+                .WithMany()
+                .HasForeignKey(r => r.CategoryId);
+
+            modelBuilder.Entity<ResourceRule>()
+                .HasOne(rr => rr.Resource)
+                .WithMany()
+                .HasForeignKey(rr => rr.ResourceId);
+
+            base.OnModelCreating(modelBuilder);
+        
+
+        modelBuilder.Entity<Booking>()
                 .HasKey(b => b.BookingId);
 
             modelBuilder.Entity<Booking>()
@@ -68,39 +104,6 @@ namespace Facility_Management.Data
                     );
                 });
 
-            // Resource
-            modelBuilder.Entity<Resource>()
-                .HasKey(r => r.ResourceId);
-
-            // ResourceType
-            modelBuilder.Entity<ResourceType>()
-                .HasKey(rt => rt.ResourceTypeId);
-
-            // ResourceCategory
-            modelBuilder.Entity<ResourceCategory>()
-                .HasKey(rc => rc.CategoryId);
-
-            // ResourceRule
-            modelBuilder.Entity<ResourceRule>()
-                .HasKey(rr => rr.RuleId);
-
-            // Relationships (explicit & safe)
-            modelBuilder.Entity<Resource>()
-                .HasOne(r => r.ResourceType)
-                .WithMany()
-                .HasForeignKey(r => r.ResourceTypeId);
-
-            modelBuilder.Entity<Resource>()
-                .HasOne(r => r.Category)
-                .WithMany()
-                .HasForeignKey(r => r.CategoryId);
-
-            modelBuilder.Entity<ResourceRule>()
-                .HasOne(rr => rr.Resource)
-                .WithMany()
-                .HasForeignKey(rr => rr.ResourceId);
-
-            base.OnModelCreating(modelBuilder);
         }
 
 =======

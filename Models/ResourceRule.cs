@@ -6,10 +6,14 @@
         public int ResourceId { get; set; }
         public Resource Resource { get; set; }
 
-        public int StartHour { get; set; }
-        public int EndHour { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
 
         public int MaxBookingHours { get; set; }
         public int BufferMinutes { get; set; }
+        public bool AutoApproveBooking { get; set; }
+
+        public bool AdminApprovalRequired { get; set; }
+
     }
 }
