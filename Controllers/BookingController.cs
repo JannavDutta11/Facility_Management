@@ -1,7 +1,6 @@
-﻿using Facility_Management.Models;
-using Microsoft.AspNetCore.Authorization;
 ﻿using Facility_Management.DTOs;
 using Facility_Management.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,31 +8,24 @@ using System.Data;
 
 
 
- 
 namespace Facility_Management.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class BookingController : ControllerBase
     {
-        [ApiController]
-        [Route("api/[controller]")]
-        public class BookingController : ControllerBase
-        {
-            private readonly AppDbContext _context;
+        private readonly AppDbContext _context;
 
-            public BookingController(AppDbContext context)
-            {
-                _context = context;
-            }
+        public BookingController(AppDbContext context)
+        {
+            _context = context;
+        }
 
         // CREATE BOOKING
-
         [Authorize]
         [HttpPost("create")]
-            
-        public async Task<IActionResult> CreateBooking(BookingDto dto)
-            // CREATE BOOKING
-         
-            [HttpPost("create")]
-            public async Task<IActionResult> CreateBooking([FromBody]BookingDto dto)
-            {
+        public async Task<IActionResult> CreateBooking([FromBody] BookingDto dto)
+        {
             // 1️⃣ Time validation
             if (dto.StartTime >= dto.EndTime)
                 return BadRequest("StartTime must be before EndTime.");
@@ -42,15 +34,8 @@ namespace Facility_Management.Controllers
             bool resourceExists = await _context.Resource
                 .AnyAsync(r => r.ResourceId == dto.ResourceId);
 
-        // APPROVE BOOKING
-
-        [Authorize(Policy = "FacilityManagerOrAdmin")]
-        [HttpPut("approve/{id}")]
-            
-        public async Task<IActionResult> ApproveBooking(int id)
             if (!resourceExists)
                 return BadRequest("Invalid ResourceId. Resource does not exist.");
-
 
 
             //bool systemAllowed = await _context.ResourceRule.AnyAsync(a =>
@@ -94,7 +79,7 @@ namespace Facility_Management.Controllers
         b.ResourceId == dto.ResourceId &&
         b.Status == "Approved"
     )
-    .ToListAsync(); // 👈 DB ends here
+    .ToListAsync(); //
 
             var bufferMinutes = rule.BufferMinutes;
 
@@ -119,7 +104,7 @@ namespace Facility_Management.Controllers
                 Purpose = dto.Purpose,
                 NumberOfUsers = dto.NumberOfUsers,
 
-                // 🔑 approval logic (correct place)
+
                 Status = rule.AutoApproveBooking ? "Approved" : "Pending",
 
                 CreatedAt = DateTime.Now
@@ -129,7 +114,6 @@ namespace Facility_Management.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(booking);
-
 
 
             //Booking booking = new Booking
@@ -148,71 +132,61 @@ namespace Facility_Management.Controllers
 
             //    return Ok(booking);
         }
-               
         // APPROVE BOOKING
-
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpPut("approve/{id}")]
-            public async Task<IActionResult> ApproveBooking(int id)
-            {
-                var booking = await _context.Bookings.FindAsync(id);
-                if (booking == null)
-                    return NotFound();
+        public async Task<IActionResult> ApproveBooking(int id)
+        {
+            var booking = await _context.Bookings.FindAsync(id);
+            if (booking == null)
+                return NotFound();
 
-                booking.Status = "Approved";
-                await _context.SaveChangesAsync();
+            booking.Status = "Approved";
+            await _context.SaveChangesAsync();
 
-                return Ok("Booking Approved");
-            }
+            return Ok("Booking Approved");
+        }
 
 
         // REJECT BOOKING
-
         [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpPut("reject/{id}")]
-            
         public async Task<IActionResult> RejectBooking(int id, string reason)
-            {
-                var booking = await _context.Bookings.FindAsync(id);
-                if (booking == null)
-                    return NotFound();
+        {
+            var booking = await _context.Bookings.FindAsync(id);
+            if (booking == null)
+                return NotFound();
 
-                booking.Status = "Rejected";
-                booking.RejectionReason = reason;
+            booking.Status = "Rejected";
+            booking.RejectionReason = reason;
 
-                await _context.SaveChangesAsync();
-                return Ok("Booking Rejected");
-            }
+            await _context.SaveChangesAsync();
+            return Ok("Booking Rejected");
+        }
 
         // CANCEL BOOKING
-
         [Authorize]
         [HttpPut("cancel/{id}")]
-            
         public async Task<IActionResult> CancelBooking(int id)
-            {
-                var booking = await _context.Bookings.FindAsync(id);
-                if (booking == null)
-                    return NotFound();
+        {
+            var booking = await _context.Bookings.FindAsync(id);
+            if (booking == null)
+                return NotFound();
 
-                booking.Status = "Cancelled";
-                await _context.SaveChangesAsync();
+            booking.Status = "Cancelled";
+            await _context.SaveChangesAsync();
 
-                return Ok("Booking Cancelled");
-            }
+            return Ok("Booking Cancelled");
+        }
 
 
         // GET ALL BOOKINGS
-
         [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpGet("all")]
-            
         public async Task<IActionResult> GetAllBookings()
-            {
-                var bookings = await _context.Bookings.ToListAsync();
-                return Ok(bookings);
-            }
+        {
+            var bookings = await _context.Bookings.ToListAsync();
+            return Ok(bookings);
         }
     }
-
-
-
+}

@@ -1,6 +1,5 @@
-﻿namespace Facility_Management.Models
-﻿namespace Facility_Management.DTOs
-{
+﻿namespace Facility_Management.Models;
+
     public class BookingDto
     {
         public int ResourceId { get; set; }
@@ -16,6 +15,5 @@
         public int NumberOfUsers { get; set; }
 
     }
-}
     
 
