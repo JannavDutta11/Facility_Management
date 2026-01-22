@@ -134,49 +134,7 @@ namespace Facility_Management.Controllers
 
             //    return Ok(booking);
         }
-                if (dto.StartTime >= dto.EndTime)
-                    return BadRequest("StartTime must be before EndTime.");
-
-                if(dto.NumberOfUsers <=0)
-                return BadRequest("Number of users must be greater than zero");
-
-            bool resourceExists = await _context.Resource.AnyAsync(r => r.ResourceId == dto.ResourceId);
-
-            if (!resourceExists)
-                return BadRequest("Invalid ResourceId. Resource does not exist.");
-
-
-
-            bool conflict = await _context.Bookings.AnyAsync(b =>
-                    b.ResourceId == dto.ResourceId &&
-                    b.Status == "Approved" &&
-                    dto.StartTime < b.EndTime &&
-                    dto.EndTime > b.StartTime
-                );
-
-                if (conflict)
-                    return BadRequest("Booking conflict detected.");
-
-
-
-
-            Booking booking = new Booking
-            {
-                ResourceId = dto.ResourceId,
-                StartTime = dto.StartTime,
-                EndTime = dto.EndTime,
-                Purpose = dto.Purpose,
-                NumberOfUsers = dto.NumberOfUsers,
-                Status = "Pending",
-                CreatedAt = DateTime.Now
-            };
-
-            await _context.Bookings.AddAsync(booking);
-            await _context.SaveChangesAsync();
-
-            return Ok(booking);
-        }
-
+               
         // APPROVE BOOKING
 
         [HttpPut("approve/{id}")]
