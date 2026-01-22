@@ -18,6 +18,8 @@
 
   <ItemGroup>
     <Folder Include="Converters\" />
+    <Folder Include="Converters\" />
+    <Folder Include="Services\" />
     <Folder Include="Services\" />
     <Folder Include="Repository\" />
     <Folder Include="Services\" />
