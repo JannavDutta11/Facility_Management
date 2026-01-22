@@ -10,7 +10,7 @@ namespace Facility_Management.Data
         public DbSet<Resource> Resources { get; set; }
         public DbSet<Maintenance> Maintenances { get; set; }
 <<<<<<< Updated upstream
-        public IEnumerable<object> Resources { get; internal set; }
+        //public IEnumerable<object> Resources { get; internal set; }
 
         public DbSet<Resource> Resource { get; set; }
         public DbSet<ResourceType> ResourceTypes { get; set; }
