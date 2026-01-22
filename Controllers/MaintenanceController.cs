@@ -1,3 +1,5 @@
+﻿using Facility_Management.Models;
+using Microsoft.AspNetCore.Authorization;
 ﻿using Facility_Management.Dtos;
 using Facility_Management.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +14,13 @@ namespace Facility_Management.Controllers
         {
             _context = context;
         }
+        // ===============================
+        // 1. CREATE MAINTENANCE
+        // ===============================
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
+        [HttpPost]
+        
+        public async Task<IActionResult> CreateMaintenance(Maintenance maintenance)
         // 1️⃣ SCHEDULE MAINTENANCE
         [HttpPost("schedule")]
         public IActionResult ScheduleMaintenance(ScheduleMaintenanceDto dto)
@@ -30,6 +39,55 @@ namespace Facility_Management.Controllers
                 Status = "Scheduled"
             };
             _context.Maintenances.Add(maintenance);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetMaintenanceById),
+                new { id = maintenance.MaintenanceId }, maintenance);
+        }
+        // ===============================
+        // 2. GET ALL MAINTENANCE
+        // ===============================
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
+        [HttpGet]
+        
+
+        public async Task<IActionResult> GetAllMaintenance()
+        {
+            var data = await _context.Maintenances.ToListAsync();
+            return Ok(data);
+        }
+        // ===============================
+        // 3. GET MAINTENANCE BY ID
+        // ===============================
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
+        [HttpGet("{id}")]
+        
+        public async Task<IActionResult> GetMaintenanceById(int id)
+        {
+            var maintenance = await _context.Maintenances.FindAsync(id);
+            if (maintenance == null)
+                return NotFound();
+            return Ok(maintenance);
+        }
+        // ===============================
+        // 4. GET MAINTENANCE BY RESOURCE
+        // ===============================
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
+        [HttpGet("resource/{resourceId}")]
+        
+        public async Task<IActionResult> GetByResourceId(int resourceId)
+        {
+            var data = await _context.Maintenances
+                .Where(m => m.ResourceId == resourceId)
+                .ToListAsync();
+            return Ok(data);
+        }
+        // ===============================
+        // 5. UPDATE MAINTENANCE
+        // ===============================
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
+        [HttpPut("{id}")]
+        
+        public async Task<IActionResult> UpdateMaintenance(int id, Maintenance maintenance)
             _context.SaveChanges();
             return Ok("Maintenance scheduled and resource blocked");
         }
@@ -61,6 +119,13 @@ namespace Facility_Management.Controllers
             _context.SaveChanges();
             return Ok("Maintenance completed and resource unblocked");
         }
+        // ===============================
+        // 6. DELETE / CLOSE MAINTENANCE
+        // ===============================
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
+        [HttpDelete("{id}")]
+        
+        public async Task<IActionResult> DeleteMaintenance(int id)
         // 3️⃣ GET MAINTENANCE HISTORY
         [HttpGet("history/{resourceId}")]
         public IActionResult GetMaintenanceHistory(int resourceId)
