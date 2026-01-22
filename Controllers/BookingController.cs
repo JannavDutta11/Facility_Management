@@ -26,17 +26,25 @@ namespace Facility_Management.Controllers
             [HttpPost("create")]
             public async Task<IActionResult> CreateBooking([FromBody]BookingDto dto)
             {
-            // 1️⃣ Time validation
+            
             if (dto.StartTime >= dto.EndTime)
                 return BadRequest("StartTime must be before EndTime.");
 
-            // 2️⃣ Resource existence validation (Dev-1 integration)
+            
             bool resourceExists = await _context.Resource
                 .AnyAsync(r => r.ResourceId == dto.ResourceId);
 
             if (!resourceExists)
                 return BadRequest("Invalid ResourceId. Resource does not exist.");
 
+            var resource = await _context.Resource
+       .FirstOrDefaultAsync(r => r.ResourceId == dto.ResourceId);
+
+            if (resource == null)
+                return NotFound("Resource not found");
+
+            if (resource.IsUnderMaintenance == true)
+                return BadRequest("Resource is under maintenance. Booking not allowed");
 
 
             //bool systemAllowed = await _context.ResourceRule.AnyAsync(a =>
@@ -80,7 +88,7 @@ namespace Facility_Management.Controllers
         b.ResourceId == dto.ResourceId &&
         b.Status == "Approved"
     )
-    .ToListAsync(); // 👈 DB ends here
+    .ToListAsync(); 
 
             var bufferMinutes = rule.BufferMinutes;
 
@@ -105,7 +113,7 @@ namespace Facility_Management.Controllers
                 Purpose = dto.Purpose,
                 NumberOfUsers = dto.NumberOfUsers,
 
-                // 🔑 approval logic (correct place)
+               
                 Status = rule.AutoApproveBooking ? "Approved" : "Pending",
 
                 CreatedAt = DateTime.Now

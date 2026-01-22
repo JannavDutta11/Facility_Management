@@ -16,6 +16,7 @@
 
         public bool IsArchived { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public bool IsAvailable { get; internal set; }
+        public bool IsAvailable { get; set; }
+        public bool IsUnderMaintenance { get;  set; }
     }
 }
