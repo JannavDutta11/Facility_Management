@@ -19,6 +19,9 @@ namespace Facility_Management.Models
 
         // "User" | "System" | "Admin"
         public string Source { get; set; } = "User";
+        public int ResourceId { get; internal set; }
+        public DateTime StartTime { get; internal set; }
+        public DateTime EndTime { get; internal set; }
     }
 }
 
