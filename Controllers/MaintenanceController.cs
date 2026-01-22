@@ -1,11 +1,10 @@
 ﻿using Facility_Management.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 namespace Facility_Management.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class MaintenanceController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -21,8 +20,19 @@ namespace Facility_Management.Controllers
         
         public async Task<IActionResult> CreateMaintenance(Maintenance maintenance)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var resource = _context.Resource.Find(dto.ResourceId);
+            if (resource == null)
+                return NotFound("Resource not found");
+            // Block resource
+            resource.IsAvailable = false;
+            var maintenance = new Maintenance
+            {
+                ResourceId = dto.ResourceId,
+                MaintenanceType = dto.MaintenanceType,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate,
+                Status = "Scheduled"
+            };
             _context.Maintenances.Add(maintenance);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetMaintenanceById),
@@ -74,11 +84,29 @@ namespace Facility_Management.Controllers
         
         public async Task<IActionResult> UpdateMaintenance(int id, Maintenance maintenance)
         {
-            if (id != maintenance.MaintenanceId)
-                return BadRequest("Maintenance ID mismatch");
-            _context.Entry(maintenance).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return Ok(maintenance);
+            var resource = _context.Resource.Find(dto.ResourceId);
+            if (resource == null)
+                return NotFound("Resource not found");
+            // Unblock resource
+            resource.IsAvailable = true;
+            var history = new MaintenanceHistory
+            {
+                ResourceId = dto.ResourceId,
+                WorkDone = dto.WorkDone,
+                Cost = dto.Cost,
+                TimeTakenHours = dto.TimeTakenHours,
+                PartsUsed = dto.PartsUsed,
+                CompletedOn = DateTime.Now
+            };
+            _context.MaintenanceHistories.Add(history);
+            // Update maintenance status
+            var maintenance = _context.Maintenances
+                .Where(m => m.ResourceId == dto.ResourceId && m.Status == "Scheduled")
+                .FirstOrDefault();
+            if (maintenance != null)
+                maintenance.Status = "Completed";
+            _context.SaveChanges();
+            return Ok("Maintenance completed and resource unblocked");
         }
         // ===============================
         // 6. DELETE / CLOSE MAINTENANCE
@@ -88,12 +116,10 @@ namespace Facility_Management.Controllers
         
         public async Task<IActionResult> DeleteMaintenance(int id)
         {
-            var maintenance = await _context.Maintenances.FindAsync(id);
-            if (maintenance == null)
-                return NotFound();
-            _context.Maintenances.Remove(maintenance);
-            await _context.SaveChangesAsync();
-            return Ok(new { message = "Maintenance record removed" });
+            var history = _context.MaintenanceHistories
+                .Where(h => h.ResourceId == resourceId)
+                .ToList();
+            return Ok(history);
         }
     }
 }

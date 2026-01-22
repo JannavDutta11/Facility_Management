@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 
 
@@ -27,35 +28,13 @@ namespace Facility_Management.Controllers
             
         public async Task<IActionResult> CreateBooking(BookingDto dto)
             {
-                if (dto.StartTime >= dto.EndTime)
-                    return BadRequest("StartTime must be before EndTime.");
+            
+            if (dto.StartTime >= dto.EndTime)
+                return BadRequest("StartTime must be before EndTime.");
 
-                bool conflict = await _context.Bookings.AnyAsync(b =>
-                    b.ResourceId == dto.ResourceId &&
-                    b.Status == "Approved" &&
-                    dto.StartTime < b.EndTime &&
-                    dto.EndTime > b.StartTime
-                );
-
-                if (conflict)
-                    return BadRequest("Booking conflict detected.");
-
-                Booking booking = new Booking
-                {
-                    ResourceId = dto.ResourceId,
-                    StartTime = dto.StartTime,
-                    EndTime = dto.EndTime,
-                    Purpose = dto.Purpose,
-                    NumberOfUsers = dto.NumberOfUsers,
-                    Status = "Pending",
-                    CreatedAt = DateTime.Now
-                };
-
-                await _context.Bookings.AddAsync(booking);
-                await _context.SaveChangesAsync();
-
-                return Ok(booking);
-            }
+            
+            bool resourceExists = await _context.Resource
+                .AnyAsync(r => r.ResourceId == dto.ResourceId);
 
         // APPROVE BOOKING
 
