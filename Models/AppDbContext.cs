@@ -15,7 +15,9 @@ namespace Facility_Management.Models
         public DbSet<Booking> Bookings { get; set; }
 
         public DbSet<Maintenance> Maintenances { get; set; }
-        public IEnumerable<object> Resources { get; internal set; }
+       
+        public DbSet<MaintenanceHistory> MaintenanceHistories { get; set; }
+        //public IEnumerable<object> Resources { get; internal set; }
 
         public DbSet<Resource> Resource { get; set; }
         public DbSet<ResourceType> ResourceTypes { get; set; }

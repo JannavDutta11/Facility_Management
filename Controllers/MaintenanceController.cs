@@ -1,10 +1,10 @@
-﻿using Facility_Management.Models;
+﻿using Facility_Management.Dtos;
+using Facility_Management.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 namespace Facility_Management.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class MaintenanceController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -12,74 +12,63 @@ namespace Facility_Management.Controllers
         {
             _context = context;
         }
-        // ===============================
-        // 1. CREATE MAINTENANCE
-        // ===============================
-        [HttpPost]
-        public async Task<IActionResult> CreateMaintenance(Maintenance maintenance)
+        // 1️⃣ SCHEDULE MAINTENANCE
+        [HttpPost("schedule")]
+        public IActionResult ScheduleMaintenance(ScheduleMaintenanceDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var resource = _context.Resource.Find(dto.ResourceId);
+            if (resource == null)
+                return NotFound("Resource not found");
+            // Block resource
+            resource.IsAvailable = false;
+            var maintenance = new Maintenance
+            {
+                ResourceId = dto.ResourceId,
+                MaintenanceType = dto.MaintenanceType,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate,
+                Status = "Scheduled"
+            };
             _context.Maintenances.Add(maintenance);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetMaintenanceById),
-                new { id = maintenance.MaintenanceId }, maintenance);
+            _context.SaveChanges();
+            return Ok("Maintenance scheduled and resource blocked");
         }
-        // ===============================
-        // 2. GET ALL MAINTENANCE
-        // ===============================
-        [HttpGet]
-        public async Task<IActionResult> GetAllMaintenance()
+        // 2️⃣ COMPLETE MAINTENANCE + SAVE HISTORY
+        [HttpPost("complete")]
+        public IActionResult CompleteMaintenance(MaintenanceHistoryDto dto)
         {
-            var data = await _context.Maintenances.ToListAsync();
-            return Ok(data);
+            var resource = _context.Resource.Find(dto.ResourceId);
+            if (resource == null)
+                return NotFound("Resource not found");
+            // Unblock resource
+            resource.IsAvailable = true;
+            var history = new MaintenanceHistory
+            {
+                ResourceId = dto.ResourceId,
+                WorkDone = dto.WorkDone,
+                Cost = dto.Cost,
+                TimeTakenHours = dto.TimeTakenHours,
+                PartsUsed = dto.PartsUsed,
+                CompletedOn = DateTime.Now
+            };
+            _context.MaintenanceHistories.Add(history);
+            // Update maintenance status
+            var maintenance = _context.Maintenances
+                .Where(m => m.ResourceId == dto.ResourceId && m.Status == "Scheduled")
+                .FirstOrDefault();
+            if (maintenance != null)
+                maintenance.Status = "Completed";
+            _context.SaveChanges();
+            return Ok("Maintenance completed and resource unblocked");
         }
-        // ===============================
-        // 3. GET MAINTENANCE BY ID
-        // ===============================
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetMaintenanceById(int id)
+        // 3️⃣ GET MAINTENANCE HISTORY
+        [HttpGet("history/{resourceId}")]
+        public IActionResult GetMaintenanceHistory(int resourceId)
         {
-            var maintenance = await _context.Maintenances.FindAsync(id);
-            if (maintenance == null)
-                return NotFound();
-            return Ok(maintenance);
-        }
-        // ===============================
-        // 4. GET MAINTENANCE BY RESOURCE
-        // ===============================
-        [HttpGet("resource/{resourceId}")]
-        public async Task<IActionResult> GetByResourceId(int resourceId)
-        {
-            var data = await _context.Maintenances
-                .Where(m => m.ResourceId == resourceId)
-                .ToListAsync();
-            return Ok(data);
-        }
-        // ===============================
-        // 5. UPDATE MAINTENANCE
-        // ===============================
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateMaintenance(int id, Maintenance maintenance)
-        {
-            if (id != maintenance.MaintenanceId)
-                return BadRequest("Maintenance ID mismatch");
-            _context.Entry(maintenance).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return Ok(maintenance);
-        }
-        // ===============================
-        // 6. DELETE / CLOSE MAINTENANCE
-        // ===============================
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMaintenance(int id)
-        {
-            var maintenance = await _context.Maintenances.FindAsync(id);
-            if (maintenance == null)
-                return NotFound();
-            _context.Maintenances.Remove(maintenance);
-            await _context.SaveChangesAsync();
-            return Ok(new { message = "Maintenance record removed" });
+            var history = _context.MaintenanceHistories
+                .Where(h => h.ResourceId == resourceId)
+                .ToList();
+            return Ok(history);
         }
     }
 }
