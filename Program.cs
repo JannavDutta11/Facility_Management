@@ -1,12 +1,13 @@
 using Facility_Management.Converters;
-using System.Text;
 using Facility_Management.Models;
 using Facility_Management.Repository;
+using Facility_Management.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +32,23 @@ builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerGen();
 string cn = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(cn));
+
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular",
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+        });
+});
+
+
+
+
 
 
 // ----------------- Identity -----------------
@@ -84,6 +102,7 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddScoped<Facility_Management.Repository.IResourceRepository, Facility_Management.Repository.ResourceRepository>();
 
+builder.Services.AddScoped<AnalyticsService>();
 builder.Services.AddScoped<JwtTokenService>();                         // used in AuthController
 
 
@@ -129,6 +148,9 @@ c.AddSecurityRequirement(new OpenApiSecurityRequirement
 
 
 var app = builder.Build();
+
+app.UseCors("AllowAngular");
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
