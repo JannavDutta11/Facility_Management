@@ -12,7 +12,7 @@
         public DateTime EndTime { get; set; }
         public string? Purpose { get; set; }
         public int NumberOfUsers { get; set; }
-        public string? Status { get; set; }
+        public string Status { get; set; }
         public string? RejectionReason { get; set; }
         public DateTime CreatedAt { get; set; }
     }

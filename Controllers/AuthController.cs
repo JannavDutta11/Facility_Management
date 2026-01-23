@@ -47,7 +47,7 @@ namespace Facility_Management.Controllers
         }
 
         [HttpPost("login")]
-        [AllowAnonymous]
+       [AllowAnonymous]
         public async Task<IActionResult> Login(LoginDto dto)
         {
             var user = await _userManager.FindByNameAsync(dto.UserNameOrEmail)

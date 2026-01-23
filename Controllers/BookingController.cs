@@ -36,6 +36,12 @@ namespace Facility_Management.Controllers
 
             if (!resourceExists)
                 return BadRequest("Invalid ResourceId. Resource does not exist.");
+            var resource = await _context.Resource
+        .FirstOrDefaultAsync(r => r.ResourceId == dto.ResourceId);
+            if (resource == null)
+                return BadRequest("Invalid ResourceId.");
+            if (resource.IsUnderMaintenance)
+                return BadRequest("Resource is under maintenance. Booking not allowed.");
 
 
             //bool systemAllowed = await _context.ResourceRule.AnyAsync(a =>

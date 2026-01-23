@@ -23,6 +23,7 @@ namespace Facility_Management.Controllers
                 return NotFound("Resource not found");
             // Block resource
             resource.IsAvailable = false;
+            resource.IsUnderMaintenance = true;
             var maintenance = new Maintenance
             {
                 ResourceId = dto.ResourceId,
