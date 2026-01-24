@@ -1,8 +1,10 @@
-﻿using Facility_Management.Models;
+﻿using Facility_Management.DTOs;
+using Facility_Management.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Web;
 
 namespace Facility_Management.Controllers
 {
@@ -61,6 +63,48 @@ namespace Facility_Management.Controllers
             var roles = await _userManager.GetRolesAsync(user);
             return Ok(new { token, roles, user = new { user.Id, user.UserName, user.Email } });
         }
+
+
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+                return Ok(); // security: don't reveal user existence
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            var resetLink = $"http://localhost:4200/reset-password?email={dto.Email}&token={Uri.EscapeDataString(token)}";
+
+            // TODO: send email (SMTP / SendGrid / etc.)
+            return Ok("Password reset link sent");
+        }
+
+
+
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+                return BadRequest("Invalid request");
+
+            var result = await _userManager.ResetPasswordAsync(
+                user,
+                dto.Token,
+                dto.NewPassword
+            );
+
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return Ok("Password reset successful");
+        }
+
+
+
 
         [HttpPost("assign-role")]
         [Authorize(Policy = "AdminOnly")]
