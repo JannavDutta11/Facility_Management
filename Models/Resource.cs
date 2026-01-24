@@ -18,7 +18,7 @@
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool IsAvailable { get; internal set; }
         public int Id { get;  set; }
-        public bool IsAvailable { get; set; } = true;
+       
 
         public bool IsUnderMaintenance { get; set; }=false;
     }

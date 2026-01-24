@@ -13,11 +13,14 @@ namespace Facility_Management.Models
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
 
         {
+            
+
 
         }
 
-        
         public DbSet<Booking> Bookings { get; set; }
+
+
 
         public DbSet<Maintenance> Maintenances { get; set; }
        // public IEnumerable<object> Resources { get; internal set; }

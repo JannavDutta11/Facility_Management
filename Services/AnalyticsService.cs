@@ -49,6 +49,61 @@ namespace Facility_Management.Services
         }
 
 
+        public async Task<IEnumerable<UtilizationDto>> GetDailyUtilization()
+        {
+            return _context.Bookings
+                .GroupBy(b => new { b.Resource.Id, b.Date.Date })
+                .Select(g => new UtilizationDto
+                {
+                    Resource = g.First().Resource.ResourceName,
+                    PlannedMinutes = g.Sum(x => x.PlannedMinutes),
+                    ActualMinutes = g.Sum(x => x.ActualMinutes),
+                    Utilization = (double)g.Sum(x => x.ActualMinutes) /
+                                  g.Sum(x => x.PlannedMinutes) * 100
+                })
+                .ToList();
+        }
+
+
+        public async Task<IEnumerable<UtilizationDto>> GetWeeklyUtilization()
+        {
+            return _context.Bookings
+                .GroupBy(b => new
+                {
+                    ResourceId = b.Resource.Id,
+                    Week = EF.Functions.DateDiffWeek(DateTime.MinValue, b.Date)
+                })
+                .Select(g => new UtilizationDto
+                {
+                    Resource = g.First().Resource.ResourceName,
+                    PlannedMinutes = g.Sum(x => x.PlannedMinutes),
+                    ActualMinutes = g.Sum(x => x.ActualMinutes),
+                    Utilization = (double)g.Sum(x => x.ActualMinutes) /
+                                  g.Sum(x => x.PlannedMinutes) * 100
+                })
+                .ToList();
+        }
+
+
+
+        public async Task<IEnumerable<UtilizationDto>> GetMonthlyUtilization()
+        {
+            return _context.Bookings
+                .GroupBy(b => new { b.Resource.Id, b.Date.Year, b.Date.Month })
+                .Select(g => new UtilizationDto
+                {
+                    Resource = g.First().Resource.ResourceName,
+                    PlannedMinutes = g.Sum(x => x.PlannedMinutes),
+                    ActualMinutes = g.Sum(x => x.ActualMinutes),
+                    Utilization = (double)g.Sum(x => x.ActualMinutes) /
+                                  g.Sum(x => x.PlannedMinutes) * 100
+                })
+                .ToList();
+        }
+
+
+
+
         public async Task<IEnumerable<PeakUsageDto>> GetPeakUsageReport()
         {
             return await _context.Resource.Select(r => new PeakUsageDto
