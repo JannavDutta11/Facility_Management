@@ -117,6 +117,35 @@ namespace Facility_Management.Controllers
             if (!result.Succeeded) return BadRequest(result.Errors);
             return Ok("Role assigned.");
         }
+
+
+        [Authorize(Policy = "AdminOnly")]
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers([FromServices] UserManager<ApplicationUser> userManager)
+
+        {
+            // NOTE: userManager.Users may be IQueryable; we materialize it first.
+            var users = userManager.Users.ToList();
+
+            var list = new List<UserWithRolesDto>();
+            foreach (var user in users)
+
+            {
+                var roles = await userManager.GetRolesAsync(user);
+                list.Add(new UserWithRolesDto
+                {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    Roles = roles
+                });
+            }
+
+            return Ok(list);
+        }
+
+
+
     }
 }
 
