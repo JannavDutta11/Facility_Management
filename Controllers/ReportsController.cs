@@ -27,11 +27,6 @@ namespace Facility_Management.Controllers
         }
 
         [HttpGet("utilization")]
-        //public async Task<IActionResult> GetUtilization()
-        //{
-        //    var result = await _analytics.GetUtilizationReport();
-        //    return Ok(result);
-        //}
 
        
         public async Task<IActionResult> GetUtilization([FromQuery] string period)
