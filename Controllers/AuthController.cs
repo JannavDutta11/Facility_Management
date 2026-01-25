@@ -49,7 +49,7 @@ namespace Facility_Management.Controllers
         }
 
         [HttpPost("login")]
-       [AllowAnonymous]
+        [AllowAnonymous]
         public async Task<IActionResult> Login(LoginDto dto)
         {
             var user = await _userManager.FindByNameAsync(dto.UserNameOrEmail)
@@ -65,43 +65,82 @@ namespace Facility_Management.Controllers
         }
 
 
+        
+#if DEBUG
 
+
+[AllowAnonymous]
+    [HttpGet("dev-reset-redirect")]
+    public async Task<IActionResult> DevResetRedirect([FromQuery] string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return BadRequest("Email is required");
+
+        var user = await _userManager.FindByEmailAsync(email);
+        // For security: do not reveal existence. If not found, still redirect to a generic page or 204.
+        if (user == null)
+            return NoContent(); // or Redirect("http://localhost:4200/forgot-password?sent=true");
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var encoded = Uri.EscapeDataString(token);
+
+        // Use your actual Angular origin here (configurable)
+        var resetUrl = $"http://localhost:4200/reset-password?email={email}&token={encoded}";
+
+        // DEV: redirect (302) to Angular Reset page
+        return Redirect(resetUrl);
+    }
+#endif
+
+
+
+
+    [AllowAnonymous]
         [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
         {
+#if DEBUG
             var user = await _userManager.FindByEmailAsync(dto.Email);
-            if (user == null)
-                return Ok(); // security: don't reveal user existence
+            if (user == null) return Ok(new { message = "Password reset link sent" });
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encoded = Uri.EscapeDataString(token);
+            var resetUrl = $"http://localhost:4200/reset-password?email={dto.Email}&token={encoded}";
 
-            var resetLink = $"http://localhost:4200/reset-password?email={dto.Email}&token={Uri.EscapeDataString(token)}";
-
-            // TODO: send email (SMTP / SendGrid / etc.)
-            return Ok("Password reset link sent");
+            return Ok(new
+            {
+                message = "Password reset link sent",
+                resetUrl // 👈 copy this into the browser
+            });
+#else
+    // Production behavior (do not return link)
+    return Ok(new { message = "Password reset link sent" });
+#endif
         }
 
 
 
 
+
+
+
+
+        [AllowAnonymous]
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
-            if (user == null)
-                return BadRequest("Invalid request");
+            if (user == null) return BadRequest(new { message = "Invalid request" });
 
-            var result = await _userManager.ResetPasswordAsync(
-                user,
-                dto.Token,
-                dto.NewPassword
-            );
-
-            if (!result.Succeeded)
-                return BadRequest(result.Errors);
+            var rawToken = Uri.UnescapeDataString(dto.Token); // 👈 important
+            var result = await _userManager.ResetPasswordAsync(user, rawToken, dto.NewPassword);
+            if (!result.Succeeded) return BadRequest(result.Errors);
 
             return Ok("Password reset successful");
         }
+
+
+
 
 
 
@@ -148,6 +187,3 @@ namespace Facility_Management.Controllers
 
     }
 }
-
-
-
