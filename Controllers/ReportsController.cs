@@ -27,12 +27,21 @@ namespace Facility_Management.Controllers
         }
 
         [HttpGet("utilization")]
-        public async Task<IActionResult> GetUtilization()
-        {
-            var result = await _analytics.GetUtilizationReport();
-            return Ok(result);
-        }
 
+       
+        public async Task<IActionResult> GetUtilization([FromQuery] string period)
+        {
+            var data = period.ToLower() switch
+            {
+                "daily" => _analytics.GetDailyUtilization(),
+                "weekly" => _analytics.GetWeeklyUtilization(),
+                "monthly" => _analytics.GetMonthlyUtilization(),
+                _ => _analytics.GetDailyUtilization()
+
+            };
+
+            return Ok(data);
+        }
       
         [HttpGet("peak-usage")]
         public async Task<IActionResult> GetPeakUsage()
