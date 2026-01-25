@@ -150,7 +150,7 @@ namespace Facility_Management.Controllers
             booking.Status = "Approved";
             await _context.SaveChangesAsync();
 
-            return Ok("Booking Approved");
+            return Ok(new { message ="Booking Approved" });
         }
 
 
@@ -167,7 +167,7 @@ namespace Facility_Management.Controllers
             booking.RejectionReason = reason;
 
             await _context.SaveChangesAsync();
-            return Ok("Booking Rejected");
+            return Ok(new { message="Booking Rejected" });
         }
 
         // CANCEL BOOKING
