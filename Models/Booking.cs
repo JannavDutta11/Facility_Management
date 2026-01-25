@@ -7,8 +7,8 @@ namespace Facility_Management.Models
         public int BookingId { get; set; }
 
         public int ResourceId { get; set; }
-        public Resource Resource { get;  set; }
-        public string ResourceName { get; set; }
+        public Resource Resource { get; internal set; }
+        public string? ResourceName { get; set; }
         public int UserId { get; set; }
 
 

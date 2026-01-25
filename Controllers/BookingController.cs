@@ -150,7 +150,7 @@ namespace Facility_Management.Controllers
             booking.Status = "Approved";
             await _context.SaveChangesAsync();
 
-            return Ok("Booking Approved");
+            return Ok(new { message ="Booking Approved" });
         }
 
 
@@ -167,7 +167,7 @@ namespace Facility_Management.Controllers
             booking.RejectionReason = reason;
 
             await _context.SaveChangesAsync();
-            return Ok("Booking Rejected");
+            return Ok(new { message="Booking Rejected" });
         }
 
         // CANCEL BOOKING
@@ -176,13 +176,27 @@ namespace Facility_Management.Controllers
         public async Task<IActionResult> CancelBooking(int id)
         {
             var booking = await _context.Bookings.FindAsync(id);
-            if (booking == null)
-                return NotFound();
 
+            if (booking == null)
+                return NotFound("Booking not found");
+
+            // ❌ Cannot cancel these states
+            if (booking.Status == "Cancelled")
+                return BadRequest("Booking already cancelled");
+
+            if (booking.Status == "Rejected" ||
+                booking.Status == "Completed" ||
+                booking.Status == "NoShow")
+                return BadRequest($"Cannot cancel booking in {booking.Status} state");
+
+            // ✅ Allowed only for Pending / Approved
             booking.Status = "Cancelled";
+           // booking.CancelledAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
 
-            return Ok("Booking Cancelled");
+            return Ok(new { message = "Booking cancelled successfully" });
+        
         }
 
 

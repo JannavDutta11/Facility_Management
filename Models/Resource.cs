@@ -16,7 +16,7 @@
 
         public bool IsArchived { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public bool IsAvailable { get; internal set; }
+     
         public int Id { get;  set; }
        
 
