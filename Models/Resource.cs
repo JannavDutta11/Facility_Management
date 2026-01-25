@@ -21,5 +21,7 @@
        
 
         public bool IsUnderMaintenance { get; set; }=false;
+
+        public bool IsAvailable { get; set; }=true;
     }
 }
