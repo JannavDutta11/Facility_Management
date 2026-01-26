@@ -4,7 +4,7 @@
     {
         public int ResourceId { get; set; }
         public string? MaintenanceType { get; set; } // Routine / Corrective
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateTime startDateTime { get; set; }
+        public DateTime endDateTime { get; set; }
     }
 }

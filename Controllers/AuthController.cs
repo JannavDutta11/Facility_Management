@@ -34,7 +34,7 @@ namespace Facility_Management.Controllers
         public record AssignRoleDto(string UserId, string Role);
 
         [HttpPost("register")]
-     [AllowAnonymous]
+     //[AllowAnonymous]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
             var user = new ApplicationUser { UserName = dto.UserName, Email = dto.Email, FullName = dto.FullName };
@@ -49,7 +49,7 @@ namespace Facility_Management.Controllers
         }
 
         [HttpPost("login")]
-        [AllowAnonymous]
+       // [AllowAnonymous]
         public async Task<IActionResult> Login(LoginDto dto)
         {
             var user = await _userManager.FindByNameAsync(dto.UserNameOrEmail)
@@ -69,7 +69,7 @@ namespace Facility_Management.Controllers
 #if DEBUG
 
 
-[AllowAnonymous]
+//[AllowAnonymous]
     [HttpGet("dev-reset-redirect")]
     public async Task<IActionResult> DevResetRedirect([FromQuery] string email)
     {
@@ -95,7 +95,7 @@ namespace Facility_Management.Controllers
 
 
 
-    [AllowAnonymous]
+   // [AllowAnonymous]
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
         {
@@ -125,7 +125,7 @@ namespace Facility_Management.Controllers
 
 
 
-       [AllowAnonymous]
+       //[AllowAnonymous]
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
@@ -146,7 +146,7 @@ namespace Facility_Management.Controllers
 
 
         [HttpPost("assign-role")]
-      [Authorize(Policy = "AdminOnly")]
+     // [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> AssignRole(AssignRoleDto dto)
         {
             var user = await _userManager.FindByIdAsync(dto.UserId);
@@ -158,7 +158,7 @@ namespace Facility_Management.Controllers
         }
 
 
-      [Authorize(Policy = "AdminOnly")]
+      //[Authorize(Policy = "AdminOnly")]
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers([FromServices] UserManager<ApplicationUser> userManager)
 

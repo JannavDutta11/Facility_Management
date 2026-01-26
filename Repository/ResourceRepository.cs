@@ -12,7 +12,7 @@ namespace Facility_Management.Repository
         Task UpdateAsync(Resource resource);
         Task ArchiveAsync(int id);
 
-        Task SetMaintenanceStatusAsync(int resourceId, bool status); //
+        Task SetMaintenanceStatusAsync(int resourceId, bool isUnderMaintenance); //
     }
 
     public class ResourceRepository : IResourceRepository
@@ -61,11 +61,14 @@ namespace Facility_Management.Repository
             resource.IsArchived = true;
             await _context.SaveChangesAsync();
         }
-        public async Task SetMaintenanceStatusAsync(int resourceId, bool status)
+        public async Task SetMaintenanceStatusAsync(int resourceId, bool isUnderMaintenance)
         {
             var resource = await _context.Resource.FindAsync(resourceId);
             if (resource == null) return;
-            resource.IsUnderMaintenance = status;
+
+            resource.IsUnderMaintenance = isUnderMaintenance;
+            resource.IsAvailable = !isUnderMaintenance;
+            _context.Resource.Update(resource);
             await _context.SaveChangesAsync();
         }
 
