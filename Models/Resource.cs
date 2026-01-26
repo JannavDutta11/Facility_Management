@@ -16,5 +16,12 @@
 
         public bool IsArchived { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+     
+        public int Id { get;  set; }
+       
+
+        public bool IsUnderMaintenance { get; set; }=false;
+
+        public bool IsAvailable { get; set; }=true;
     }
 }

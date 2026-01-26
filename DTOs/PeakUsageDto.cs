@@ -5,5 +5,6 @@
         public string ResourceName { get; set; }
         public int PeakHour { get; set; }
         public int BookingCount { get; set; }
+        public int UsageCount { get; internal set; }
     }
 }

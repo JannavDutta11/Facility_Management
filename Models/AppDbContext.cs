@@ -1,25 +1,43 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
 namespace Facility_Management.Models
 {
-    public class AppDbContext : DbContext
+
+    // Use IdentityDbContext so AuthController/UserManager/RoleManager work
+    public class AppDbContext : IdentityDbContext<ApplicationUser>
+
 
     {
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
 
         {
+            
+
 
         }
 
-        
         public DbSet<Booking> Bookings { get; set; }
 
+
+
         public DbSet<Maintenance> Maintenances { get; set; }
-        public IEnumerable<object> Resources { get; internal set; }
+       // public IEnumerable<object> Resources { get; internal set; }
+       
+        public DbSet<MaintenanceHistory> MaintenanceHistories { get; set; }
+        //public IEnumerable<object> Resources { get; internal set; }
 
         public DbSet<Resource> Resource { get; set; }
         public DbSet<ResourceType> ResourceTypes { get; set; }
         public DbSet<ResourceCategory> ResourceCategories { get; set; }
+        public DbSet<ResourceRule> ResourceRules { get; set; }
+
+        // --- Dev 3 (Utilization Tracking) ---
+        public DbSet<UsageLog> UsageLogs { get; set; }
+        public DbSet<UsageAudit> UsageAudits { get; set; }
+
+
         
         public DbSet<ResourceRule> ResourceRule { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -109,6 +127,60 @@ namespace Facility_Management.Models
                     );
                 });
 
+            // Resource
+            modelBuilder.Entity<Resource>()
+                .HasKey(r => r.ResourceId);
+
+            // ResourceType
+            modelBuilder.Entity<ResourceType>()
+                .HasKey(rt => rt.ResourceTypeId);
+
+            // ResourceCategory
+            modelBuilder.Entity<ResourceCategory>()
+                .HasKey(rc => rc.CategoryId);
+
+            // ResourceRule
+            modelBuilder.Entity<ResourceRule>()
+                .HasKey(rr => rr.RuleId);
+
+            // Relationships (explicit & safe)
+            modelBuilder.Entity<Resource>()
+                .HasOne(r => r.ResourceType)
+                .WithMany()
+                .HasForeignKey(r => r.ResourceTypeId);
+
+            modelBuilder.Entity<Resource>()
+                .HasOne(r => r.Category)
+                .WithMany()
+                .HasForeignKey(r => r.CategoryId);
+
+            modelBuilder.Entity<ResourceRule>()
+                .HasOne(rr => rr.Resource)
+                .WithMany()
+                .HasForeignKey(rr => rr.ResourceId);
+
+            // ---------------- UsageLog ----------------
+            modelBuilder.Entity<UsageLog>()
+                .HasKey(u => u.UsageLogId);
+
+            modelBuilder.Entity<UsageLog>()
+                .HasOne(u => u.Booking)
+                .WithMany().HasForeignKey(u => u.BookingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UsageLog>()
+                            .HasIndex(u => new { u.BookingId, u.ActualStartTime, u.ActualEndTime });
+
+            // ---------------- UsageAudit ----------------
+            modelBuilder.Entity<UsageAudit>()
+                .HasKey(a => a.UsageAuditId);
+
+            modelBuilder.Entity<UsageAudit>()
+                           .HasIndex(a => new
+                           {
+                               a.BookingId,
+                               a.ChangedAt
+                           });
         }
 
     }

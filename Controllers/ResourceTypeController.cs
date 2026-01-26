@@ -1,4 +1,5 @@
 ﻿using Facility_Management.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,9 @@ namespace Facility_Management.Controllers
             _context1 = context1;
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
+        
         public async Task<IActionResult> Create(ResourceType type)
         {
             _context1.ResourceTypes.Add(type);
@@ -24,7 +27,9 @@ namespace Facility_Management.Controllers
             return Ok(type);
         }
 
+        [AllowAnonymous] // or [Authorize] if you prefer
         [HttpGet]
+        
         public async Task<IActionResult> GetAll()
         {
             return Ok(await _context1.ResourceTypes.ToListAsync());
