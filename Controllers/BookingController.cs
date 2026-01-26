@@ -26,11 +26,11 @@ namespace Facility_Management.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> CreateBooking([FromBody] BookingDto dto)
         {
-            // 1️⃣ Time validation
+            // 1️D Time validation
             if (dto.StartTime >= dto.EndTime)
                 return BadRequest("StartTime must be before EndTime.");
 
-            // 2️⃣ Resource existence validation (Dev-1 integration)
+            // 2️D Resource existence validation (Dev-1 integration)
             bool resourceExists = await _context.Resource
                 .AnyAsync(r => r.ResourceId == dto.ResourceId);
 
@@ -44,27 +44,6 @@ namespace Facility_Management.Controllers
                 return BadRequest("Resource is under maintenance. Booking not allowed.");
 
 
-            //bool systemAllowed = await _context.ResourceRule.AnyAsync(a =>
-            //    a.ResourceId == dto.ResourceId &&
-            //    dto.StartTime >= a.StartTime &&
-            //    dto.EndTime <= a.EndTime
-            //);
-
-            //if (!systemAllowed)
-            //    return BadRequest("Resource is not available as per system rules.");
-
-
-            //TimeSpan buffer = TimeSpan.FromMinutes(15);
-
-            //bool conflict = await _context.Bookings.AnyAsync(b =>
-            //    b.ResourceId == dto.ResourceId &&
-            //    b.Status == "Approved" &&
-            //    dto.StartTime < b.EndTime.Add(buffer) &&
-            //    dto.EndTime > b.StartTime.Subtract(buffer)
-            //);
-
-            //if (conflict)
-            //    return BadRequest("Booking conflict detected (buffer time violation).");
 
             var rule = await _context.ResourceRule
     .FirstOrDefaultAsync(r => r.ResourceId == dto.ResourceId);
@@ -122,21 +101,7 @@ namespace Facility_Management.Controllers
             return Ok(booking);
 
 
-            //Booking booking = new Booking
-            //    {
-            //        ResourceId = dto.ResourceId,
-            //        StartTime = dto.StartTime,
-            //        EndTime = dto.EndTime,
-            //        Purpose = dto.Purpose,
-            //        NumberOfUsers = dto.NumberOfUsers,
-            //        Status = "Pending",
-            //        CreatedAt = DateTime.Now
-            //    };
-
-            //    await _context.Bookings.AddAsync(booking);
-            //    await _context.SaveChangesAsync();
-
-            //    return Ok(booking);
+        
         }
         // APPROVE BOOKING
         [Authorize(Policy = "FacilityManagerOrAdmin")]
@@ -180,7 +145,6 @@ namespace Facility_Management.Controllers
             if (booking == null)
                 return NotFound("Booking not found");
 
-            // ❌ Cannot cancel these states
             if (booking.Status == "Cancelled")
                 return BadRequest("Booking already cancelled");
 
@@ -189,9 +153,9 @@ namespace Facility_Management.Controllers
                 booking.Status == "NoShow")
                 return BadRequest($"Cannot cancel booking in {booking.Status} state");
 
-            // ✅ Allowed only for Pending / Approved
+            // Allowed only for Pending / Approved
             booking.Status = "Cancelled";
-           // booking.CancelledAt = DateTime.UtcNow;
+      
 
             await _context.SaveChangesAsync();
 
