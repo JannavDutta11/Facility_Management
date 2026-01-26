@@ -4,6 +4,7 @@ using Facility_Management.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Facility_Management.Controllers
 {
@@ -77,5 +78,15 @@ namespace Facility_Management.Controllers
             await _repo.ArchiveAsync(id);
             return Ok();
         }
+
+        [Authorize(Policy = "FacilityManagerOrAdmin")]
+        [HttpPut("maintenance/{resourceId}")]
+        public async Task<IActionResult> SetUnderMaintenance(int resourceId, [FromQuery] bool status)
+        {
+            await _repo.SetMaintenanceStatusAsync(resourceId, status);
+            return Ok();
+        }
+
+
     }
 }

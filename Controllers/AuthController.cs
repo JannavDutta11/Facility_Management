@@ -34,7 +34,7 @@ namespace Facility_Management.Controllers
         public record AssignRoleDto(string UserId, string Role);
 
         [HttpPost("register")]
-      [AllowAnonymous]
+     [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
             var user = new ApplicationUser { UserName = dto.UserName, Email = dto.Email, FullName = dto.FullName };
@@ -125,7 +125,7 @@ namespace Facility_Management.Controllers
 
 
 
-        [AllowAnonymous]
+       [AllowAnonymous]
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
@@ -158,7 +158,7 @@ namespace Facility_Management.Controllers
         }
 
 
-       [Authorize(Policy = "AdminOnly")]
+      [Authorize(Policy = "AdminOnly")]
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers([FromServices] UserManager<ApplicationUser> userManager)
 
