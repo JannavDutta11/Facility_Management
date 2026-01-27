@@ -17,8 +17,8 @@ namespace Facility_Management.Controllers
         private readonly AppDbContext _ctx;
         public UsageController(AppDbContext ctx) => _ctx = ctx;
 
-        // ----- USER CHECK-IN (Booking must be Approved) -----
-        [Authorize] // require login (optional: remove if you want open)
+        
+        [Authorize] 
         [HttpPost("checkin")]
         public async Task<IActionResult> CheckIn([FromBody] CheckInDto dto)
         {
@@ -47,12 +47,12 @@ namespace Facility_Management.Controllers
                 _ctx.UsageLogs.Update(usage);
             }
 
-            // NOTE: We do NOT change Booking.Status at check-in
+           
             await _ctx.SaveChangesAsync();
             return Ok(new { Message = "Checked-in", usage.UsageLogId, usage.ActualStartTime });
         }
 
-        // ----- USER CHECK-OUT (Completes booking) -----
+       
         [Authorize]
         [HttpPost("checkout")]
         public async Task<IActionResult> CheckOut([FromBody] CheckOutDto dto)
@@ -76,7 +76,7 @@ namespace Facility_Management.Controllers
             return Ok(new { Message = "Checked-out", usage.ActualEndTime, usage.ActualCapacityUsed });
         }
 
-        // ----- ADMIN CHECK-IN -----
+       
         [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpPost("admin/checkin")]
         public async Task<IActionResult> AdminCheckIn([FromBody] AdminCheckInDto dto)
@@ -110,13 +110,12 @@ namespace Facility_Management.Controllers
                 _ctx.UsageLogs.Update(usage);
             }
 
-            // Booking.Status remains "Approved" until checkout or no-show
+            
             await _ctx.SaveChangesAsync();
             await WriteAudit(booking.BookingId, usage.UsageLogId, "AdminCheckIn", dto.Reason, old, usage);
             return Ok(new { Message = "Admin check-in recorded", usage.UsageLogId, usage.ActualStartTime });
         }
 
-        // ----- ADMIN CHECK-OUT (Completes booking) -----
        [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpPost("admin/checkout")]
         public async Task<IActionResult> AdminCheckOut([FromBody] AdminCheckOutDto dto)
@@ -146,7 +145,7 @@ namespace Facility_Management.Controllers
             return Ok(new { Message = "Admin check-out recorded", usage.ActualEndTime, usage.ActualCapacityUsed });
         }
 
-        // ----- ADMIN BACKFILL (no user actions happened) -----
+       
         [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpPost("admin/backfill")]
         public async Task<IActionResult> AdminBackfill([FromBody] AdminBackfillDto dto)
@@ -196,7 +195,7 @@ namespace Facility_Management.Controllers
             return Ok(new { Message = "Backfilled usage saved." });
         }
 
-        // ----- ADMIN EDIT (fix usage) -----
+       
         [Authorize(Policy = "FacilityManagerOrAdmin")]
         [HttpPatch("admin/edit")]
         public async Task<IActionResult> AdminEdit([FromBody] AdminEditUsageDto dto)
@@ -226,7 +225,7 @@ namespace Facility_Management.Controllers
             return Ok(new { Message = "Usage updated by admin." });
         }
 
-        // ----- ADMIN: MARK NO-SHOW (cannot mark completed) -----
+       
         [Authorize(Policy = "AdminOnly")]
         [HttpPost("admin/mark-noshow/{bookingId:int}")]
         public async Task<IActionResult> MarkNoShow([FromRoute] int bookingId, [FromBody] string? reason)
@@ -244,8 +243,8 @@ namespace Facility_Management.Controllers
             return Ok(new { Message = "Marked as No-Show." });
         }
 
-        // ----- UTILIZATION SUMMARY -----
-        [Authorize] // or allow anonymous if needed
+       
+        [Authorize]
         [HttpGet("utilization/{bookingId:int}")]
         public async Task<IActionResult> GetUtilization([FromRoute] int bookingId)
         {
@@ -271,7 +270,7 @@ namespace Facility_Management.Controllers
             });
         }
 
-        // Helper: write audit (no-op if you removed UsageAudit)
+       
         private async Task WriteAudit(int bookingId, int? usageLogId, string action, string? reason, object? oldObj, object? newObj)
         {
             try
@@ -289,7 +288,7 @@ namespace Facility_Management.Controllers
                 _ctx.UsageAudits.Add(audit);
                 await _ctx.SaveChangesAsync();
             }
-            catch { /* ignore if audits removed */ }
+            catch { }
         }
     }
 }

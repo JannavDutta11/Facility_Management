@@ -66,7 +66,7 @@ namespace Facility_Management.Controllers
 
 
         
-#if DEBUG
+
 
 
 //[AllowAnonymous]
@@ -77,20 +77,19 @@ namespace Facility_Management.Controllers
             return BadRequest("Email is required");
 
         var user = await _userManager.FindByEmailAsync(email);
-        // For security: do not reveal existence. If not found, still redirect to a generic page or 204.
+       
         if (user == null)
             return NoContent(); // or Redirect("http://localhost:4200/forgot-password?sent=true");
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         var encoded = Uri.EscapeDataString(token);
 
-        // Use your actual Angular origin here (configurable)
+       
         var resetUrl = $"http://localhost:4200/reset-password?email={email}&token={encoded}";
 
-        // DEV: redirect (302) to Angular Reset page
         return Redirect(resetUrl);
     }
-#endif
+
 
 
 
@@ -99,7 +98,7 @@ namespace Facility_Management.Controllers
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
         {
-#if DEBUG
+
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null) return Ok(new { message = "Password reset link sent" });
 
@@ -110,12 +109,12 @@ namespace Facility_Management.Controllers
             return Ok(new
             {
                 message = "Password reset link sent",
-                resetUrl // 👈 copy this into the browser
+                resetUrl 
             });
-#else
-    // Production behavior (do not return link)
+
+    
     return Ok(new { message = "Password reset link sent" });
-#endif
+
         }
 
 
@@ -132,7 +131,7 @@ namespace Facility_Management.Controllers
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null) return BadRequest(new { message = "Invalid request" });
 
-            var rawToken = Uri.UnescapeDataString(dto.Token); // 👈 important
+            var rawToken = Uri.UnescapeDataString(dto.Token); 
             var result = await _userManager.ResetPasswordAsync(user, rawToken, dto.NewPassword);
             if (!result.Succeeded) return BadRequest(result.Errors);
 
@@ -146,7 +145,7 @@ namespace Facility_Management.Controllers
 
 
         [HttpPost("assign-role")]
-     // [Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> AssignRole(AssignRoleDto dto)
         {
             var user = await _userManager.FindByIdAsync(dto.UserId);
@@ -158,12 +157,11 @@ namespace Facility_Management.Controllers
         }
 
 
-      //[Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "AdminOnly")]
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers([FromServices] UserManager<ApplicationUser> userManager)
 
         {
-            // NOTE: userManager.Users may be IQueryable; we materialize it first.
             var users = userManager.Users.ToList();
 
             var list = new List<UserWithRolesDto>();
@@ -183,6 +181,25 @@ namespace Facility_Management.Controllers
             return Ok(list);
         }
 
+
+
+
+        //public record AssignRoleByEmailDto(string Email, string Role);
+
+        //[HttpPost("assign-role-by-email")]
+        //[Authorize(Policy = "AdminOnly")]
+        //public async Task<IActionResult> AssignRole([FromBody] AssignRoleByEmailDto dto)
+        //{
+        //    var user = await _userManager.FindByEmailAsync(dto.Email);
+        //    if (user == null) return NotFound("User not found.");
+        //    if (!await _roleManager.RoleExistsAsync(dto.Role)) return BadRequest("Role does not exist.");
+        //    var result = await _userManager.AddToRoleAsync(user, dto.Role);
+        //    if (!result.Succeeded) return BadRequest(result.Errors);
+        //    return Ok(new { message = "Role assigned." });
+        //}
+
+
+        
 
 
     }
