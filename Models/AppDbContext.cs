@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 namespace Facility_Management.Models
 {
 
-    // Use IdentityDbContext so AuthController/UserManager/RoleManager work
     public class AppDbContext : IdentityDbContext<ApplicationUser>
 
 
@@ -23,17 +22,17 @@ namespace Facility_Management.Models
 
 
         public DbSet<Maintenance> Maintenances { get; set; }
-       // public IEnumerable<object> Resources { get; internal set; }
+      
        
         public DbSet<MaintenanceHistory> MaintenanceHistories { get; set; }
-        //public IEnumerable<object> Resources { get; internal set; }
+        
 
         public DbSet<Resource> Resource { get; set; }
         public DbSet<ResourceType> ResourceTypes { get; set; }
         public DbSet<ResourceCategory> ResourceCategories { get; set; }
         public DbSet<ResourceRule> ResourceRules { get; set; }
 
-        // --- Dev 3 (Utilization Tracking) ---
+      
         public DbSet<UsageLog> UsageLogs { get; set; }
         public DbSet<UsageAudit> UsageAudits { get; set; }
 

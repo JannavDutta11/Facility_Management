@@ -12,22 +12,20 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ----------------- Controllers + JSON -----------------
 builder.Services.AddControllers()
     .AddJsonOptions(opt =>
     {
-        // Global DateTime converter
+        
         opt.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
-        // opt.JsonSerializerOptions.WriteIndented = true; // optional
+       
     });
 
-// ----------------- Swagger -----------------
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Facility Management API", Version = "v1" });
 
-    // JWT support in Swagger ("Authorize" button)
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -53,13 +51,13 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// ----------------- DbContext -----------------
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-// ----------------- CORS -----------------
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -71,7 +69,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ----------------- Identity -----------------
+
 var core = builder.Services.AddIdentityCore<ApplicationUser>(options =>
 {
     options.User.RequireUniqueEmail = true;
@@ -82,13 +80,13 @@ var identityBuilder = new IdentityBuilder(core.UserType, typeof(IdentityRole), b
 identityBuilder
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
-    .AddSignInManager<SignInManager<ApplicationUser>>() // SignInManager available
-    .AddDefaultTokenProviders();                         // Needed for password reset tokens
+    .AddSignInManager<SignInManager<ApplicationUser>>() 
+    .AddDefaultTokenProviders();                         
 
-// ? Added: HttpContextAccessor (helps SignInManager and your services when they need HttpContext)
+
 builder.Services.AddHttpContextAccessor();
 
-// ----------------- JWT Auth -----------------
+
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var keyStr = jwtSection["Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyStr));
@@ -112,27 +110,26 @@ builder.Services
             IssuerSigningKey = key,
             ClockSkew = TimeSpan.FromMinutes(1)
         };
-        // options.RequireHttpsMetadata = false; // optional for local http testing
+       
     });
 
-// ----------------- Authorization Policies -----------------
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
     options.AddPolicy("FacilityManagerOrAdmin", p => p.RequireRole("FacilityManager", "Admin"));
 });
 
-// ----------------- DI Registrations -----------------
+
 builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
 builder.Services.AddScoped<AnalyticsService>();
 builder.Services.AddScoped<JwtTokenService>();
 
-// Example hosted service you already had
+
 builder.Services.AddHostedService<NoShowBackgroundService>();
 
 var app = builder.Build();
 
-// ----------------- Middleware Pipeline -----------------
 app.UseCors("AllowAngular");
 
 if (app.Environment.IsDevelopment())
@@ -148,7 +145,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// ----------------- Seed Roles -----------------
+
 using (var scope = app.Services.CreateScope())
 {
     var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
